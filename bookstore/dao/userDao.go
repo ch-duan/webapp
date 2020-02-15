@@ -7,28 +7,6 @@ import (
 	"webapp/bookstore/utils"
 )
 
-//DbIDUpdate 更新自增ID重新排序
-func DbIDUpdate() {
-	sql := "ALTER TABLE users DROP id"
-	_, err := utils.Db.Exec(sql)
-	if err != nil {
-		fmt.Println("删除自增主键失败", err)
-	} else {
-	}
-	sql = "ALTER TABLE users ADD id int not null first"
-	_, err1 := utils.Db.Exec(sql)
-	if err1 != nil {
-		fmt.Println("添加字段失败", err1)
-	} else {
-	}
-	sql = "ALTER TABLE users MODIFY COLUMN id int not null AUTO_INCREMENT, ADD PRIMARY KEY(id)"
-	_, err2 := utils.Db.Exec(sql)
-	if err2 != nil {
-		fmt.Println("更新自增主键失败", err2)
-	} else {
-	}
-}
-
 //AddUser 向数据库中添加用户并返回结果
 func AddUser(username string, password string, email string) error {
 	sql := "insert into users(username,password,email) values(?,?,?)"
@@ -44,7 +22,7 @@ func AddUser(username string, password string, email string) error {
 		return err1
 	}
 	fmt.Println("添加用户成功")
-	DbIDUpdate()
+	utils.DbIDUpdate("users")
 	return nil
 }
 
@@ -58,7 +36,7 @@ func DeleteUser(user *model.User) error {
 	}
 	rowNum, _ := result.RowsAffected()
 	fmt.Println("删除用户成功", rowNum, user.Tostring())
-	DbIDUpdate()
+	utils.DbIDUpdate("users")
 	return nil
 }
 
@@ -72,7 +50,7 @@ func UpdateUser(user *model.User) error {
 	}
 	// rowNum,_:=result.LastInsertId()
 	fmt.Println("更新用户成功", user.Tostring())
-	DbIDUpdate()
+	utils.DbIDUpdate("users")
 	return nil
 }
 

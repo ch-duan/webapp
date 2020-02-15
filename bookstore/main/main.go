@@ -6,13 +6,18 @@ import (
 	"os"
 	"text/template"
 	"webapp/bookstore/controller"
+	"webapp/bookstore/dao"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 func myBookStore(w http.ResponseWriter, r *http.Request) {
+	books, err := dao.GetBooks()
+	if err != nil {
+
+	}
 	t := template.Must(template.ParseFiles("../view/index.html"))
-	t.Execute(w, "")
+	t.Execute(w, books)
 }
 
 func main() {

@@ -8,8 +8,8 @@ type Books struct {
 	Price          float64 //单价
 	Sales          int     //销售数据
 	Stock          int     //库存
-	classification string  //分类
-	publisher      string  //出版商
+	Classification string  //分类
+	Publisher      string  //出版商
 	ImgPath        string  //图书图片路径
-	ebook          bool    //是否电子书
+	Ebook          bool    //是否电子书
 }
