@@ -3,8 +3,8 @@ package dao
 import (
 	"fmt"
 	"log"
-	"webapp/web_db/model"
-	"webapp/web_db/utils"
+	"webapp/bookstore/model"
+	"webapp/bookstore/utils"
 )
 
 //DbIDUpdate 更新自增ID重新排序

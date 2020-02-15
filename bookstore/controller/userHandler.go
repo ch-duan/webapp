@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"webapp/web_db/dao"
+	"webapp/bookstore/dao"
 )
 
 //Register 注册
@@ -14,11 +14,11 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	username := r.PostFormValue("username")
 	password := r.PostFormValue("password")
 	email := r.PostFormValue("email")
-	if username == "" {
+	if username == "" || password == "" {
 		fmt.Println("用户名为空")
 		fmt.Println("注册失败")
-		t := template.Must(template.ParseFiles("../bookstore/pages/user/regist.html"))
-		t.Execute(w, "用户名不能为空!")
+		t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
+		t.Execute(w, "用户名和密码不能为空!")
 		return
 	}
 	user, err := dao.QueryUserName(username)
@@ -28,17 +28,17 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		if user.ID > 0 {
 			fmt.Println("用户已经存在")
 			fmt.Println("注册失败")
-			t := template.Must(template.ParseFiles("../bookstore/pages/user/regist.html"))
+			t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
 			t.Execute(w, "用户名已存在!")
 		} else {
 			err = dao.AddUser(username, password, email)
 			if err != nil {
 				fmt.Println("注册失败")
-				t := template.Must(template.ParseFiles("../bookstore/pages/user/regist.html"))
+				t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
 				t.Execute(w, "注册失败")
 			} else {
 				fmt.Println("注册成功")
-				t := template.Must(template.ParseFiles("../bookstore/pages/user/regist_success.html"))
+				t := template.Must(template.ParseFiles("../view/pages/user/regist_success.html"))
 				user.Username = username
 				t.Execute(w, user)
 			}
@@ -61,16 +61,16 @@ func Login(w http.ResponseWriter, r *http.Request) {
 				//用户名和密码正确
 				fmt.Println("登陆成功")
 				log.Println(username, password, user)
-				t := template.Must(template.ParseFiles("../bookstore/pages/user/login_success.html"))
+				t := template.Must(template.ParseFiles("../view/pages/user/login_success.html"))
 				t.Execute(w, user)
 			} else {
 				fmt.Println("用户名或密码错误")
-				t := template.Must(template.ParseFiles("../bookstore/pages/user/login.html"))
+				t := template.Must(template.ParseFiles("../view/pages/user/login.html"))
 				t.Execute(w, "用户名或密码错误")
 			}
 		} else {
 			fmt.Println("用户名或密码错误")
-			t := template.Must(template.ParseFiles("../bookstore/pages/user/login.html"))
+			t := template.Must(template.ParseFiles("../view/pages/user/login.html"))
 			t.Execute(w, "")
 		}
 	}
