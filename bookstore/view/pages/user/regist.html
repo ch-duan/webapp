@@ -91,7 +91,6 @@
 							<h1>注册会员</h1>
 							<span class="errorMsg" id="msg">{{.}}</span>
 						</div>
-						<br>
 						<div class="form">
 							<form action="/register" method="POST">
 								<label>用户名称：</label>
@@ -113,6 +112,10 @@
 								<input class="itxt" type="text" placeholder="请输入邮箱地址" autocomplete="off" tabindex="1"
 									name="email" id="email" />
 								<br />
+								<br />
+								<label>手机号：&nbsp;&nbsp;&nbsp;</label>
+								<input class="itxt" type="text" placeholder="请输入手机号" autocomplete="off" tabindex="1"
+									name="phonenum" id="phonenum" />
 								<br />
 								<br />
 								<input type="submit" value="注册" id="sub_btn" />
