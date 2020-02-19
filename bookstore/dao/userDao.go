@@ -22,7 +22,6 @@ func AddUser(username string, password string, email string, phonenum string) er
 		return err1
 	}
 	fmt.Println("AddUser:添加用户成功")
-	utils.DbIDUpdate("users")
 	return nil
 }
 
@@ -36,7 +35,6 @@ func DeleteUser(user *model.User) error {
 	}
 	rowNum, _ := result.RowsAffected()
 	fmt.Println("DeleteUser:删除用户成功", rowNum, user.Tostring())
-	utils.DbIDUpdate("users")
 	return nil
 }
 
@@ -49,7 +47,6 @@ func UpdateUser(user *model.User) error {
 		return err
 	}
 	fmt.Println("UpdateUser:更新用户成功", user.Tostring())
-	utils.DbIDUpdate("users")
 	return nil
 }
 

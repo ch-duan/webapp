@@ -11,7 +11,6 @@ import (
 func AllValues(v interface{}) (fields string, fields2 string, values []interface{}, length int) {
 	arr := []string{}
 	el := reflect.TypeOf(v)
-	// fmt.Println("AllValues:", el.Kind())
 	if el.Kind() == reflect.Ptr {
 		el = el.Elem()
 	} else {

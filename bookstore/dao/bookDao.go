@@ -6,6 +6,42 @@ import (
 	"webapp/bookstore/utils"
 )
 
+//QueryPageBooks 分页获取图书
+func QueryPageBooks(pageNum int, pageSize int) (*model.Pages, error) {
+	sql := "select count(*) from books"
+	var totalRecurd int
+	var totalPageNum int
+	row := utils.Db.QueryRow(sql)
+	row.Scan(&totalRecurd)
+	if totalRecurd%pageSize == 0 {
+		totalPageNum = totalRecurd / pageSize
+	} else {
+		totalPageNum = totalRecurd/pageSize + 1
+	}
+	fields, _, _, _ := utils.AllValues(&model.Books{})
+	sql = "select " + fields + " from books limit ?,?"
+	rows, err := utils.Db.Query(sql, (pageNum-1)*pageSize, pageSize)
+	if err != nil {
+		fmt.Println("QueryPageBooks:数据库操作失败", err)
+		return nil, err
+	}
+	var books []*model.Books
+	for rows.Next() {
+		book := &model.Books{}
+		_, _, values, _ := utils.AllValues(book)
+		rows.Scan(values...)
+		books = append(books, book)
+	}
+	page := &model.Pages{
+		Books:        books,
+		PageNum:      pageNum,
+		PageSize:     pageSize,
+		TotalPageNum: totalPageNum,
+		TotalRecurd:  totalRecurd,
+	}
+	return page, nil
+}
+
 //QueryAllBooks 获取所有图书
 func QueryAllBooks() ([]*model.Books, error) {
 	var books []*model.Books
@@ -36,12 +72,21 @@ func QueryBookByID(id string) (*model.Books, error) {
 }
 
 //QueryBookByTitle 根据书名查询书籍信息
-func QueryBookByTitle(title string) ([]*model.Books, error) {
+func QueryBookByTitle(title string, pageNum int, pageSize int) (*model.Pages, error) {
 	var books []*model.Books
+	var totalRecurd int
+	var totalPageNum int
+	sql := "select count(*) from books where title like '%" + title + "%' "
+	row := utils.Db.QueryRow(sql)
+	row.Scan(&totalRecurd)
+	if totalRecurd%pageSize == 0 {
+		totalPageNum = totalRecurd / pageSize
+	} else {
+		totalPageNum = totalRecurd/pageSize + 1
+	}
 	sqlFields, _, _, _ := utils.AllValues(&model.Books{})
-	sql := "select " + sqlFields + " from books where title like '%" + title + "%' "
-	fmt.Println(sql)
-	rows, err := utils.Db.Query(sql)
+	sql = "select " + sqlFields + " from books where title like '%" + title + "%' limit ?,?"
+	rows, err := utils.Db.Query(sql, (pageNum-1)*pageSize, pageSize)
 	if err != nil {
 		fmt.Println("QueryBookByTitle:数据库操作失败", err)
 		return nil, err
@@ -52,7 +97,14 @@ func QueryBookByTitle(title string) ([]*model.Books, error) {
 		rows.Scan(values...)
 		books = append(books, book)
 	}
-	return books, nil
+	page := &model.Pages{
+		Books:        books,
+		PageNum:      pageNum,
+		PageSize:     pageSize,
+		TotalPageNum: totalPageNum,
+		TotalRecurd:  totalRecurd,
+	}
+	return page, nil
 }
 
 //AddBook 添加图书信息
@@ -79,13 +131,14 @@ func AddBook(book *model.Books) error {
 //DeleteBook 删除图书
 func DeleteBook(title string) error {
 	sql := "delete from books where title=?"
+	fmt.Println(sql, title)
+	fmt.Println(title)
 	_, err := utils.Db.Exec(sql, title)
 	if err != nil {
 		fmt.Println("DeleteBook:删除失败", err)
 		return err
 	}
 	fmt.Println("DeleteBook:删除成功", title)
-	utils.DbIDUpdate("books")
 	return nil
 }
 
@@ -96,7 +149,6 @@ func UpdateBook(book *model.Books) error {
 	s := values[0:1]
 	values = append(values[1:], s...)
 	sql := "update books set " + fields2 + "where id=?"
-	fmt.Println(sql)
 	result, err := utils.Db.Exec(sql, values...)
 	if err != nil {
 		fmt.Println("UpdateBook:失败", result, err)
