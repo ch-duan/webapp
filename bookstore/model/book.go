@@ -1,7 +1,7 @@
 package model
 
-//Books 图书结构体
-type Books struct {
+//Book 图书结构体
+type Book struct {
 	ID             int
 	Title          string  //书名
 	Author         string  //作者

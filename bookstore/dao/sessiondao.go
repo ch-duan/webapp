@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"webapp/bookstore/model"
 	"webapp/bookstore/utils"
@@ -10,12 +10,11 @@ import (
 //AddSession 添加会话
 func AddSession(session *model.Session) error {
 	sql := "insert into sessions values(?,?,?)"
-	_, err := utils.Db.Exec(sql, session.SessionID, session.UserName, session.UserID)
+	_, err := utils.Db.Exec(sql, session.SessionID, session.Username, session.UserID)
 	if err != nil {
-		fmt.Println("AddSession:失败", err)
+		log.Println("AddSession:失败", err)
 		return err
 	}
-	fmt.Println("AddSession:添加")
 	return nil
 }
 
@@ -24,10 +23,9 @@ func DeleteSession(sessionID string) error {
 	sql := "delete from sessions where sessionid=?"
 	_, err := utils.Db.Exec(sql, sessionID)
 	if err != nil {
-		fmt.Println("DeleteSession:失败", err)
+		log.Println("DeleteSession:失败", err)
 		return err
 	}
-	fmt.Println("DeleteSession:删除成功")
 	return nil
 }
 
@@ -36,7 +34,7 @@ func QuerySession(sessionID string) (*model.Session, error) {
 	sql := "select sessionid,username,userid from sessions where sessionid=?"
 	row := utils.Db.QueryRow(sql, sessionID)
 	session := &model.Session{}
-	row.Scan(&session.SessionID, &session.UserName, &session.UserID)
+	row.Scan(&session.SessionID, &session.Username, &session.UserID)
 	return session, nil
 }
 

@@ -1,34 +1,22 @@
 package dao
 
 import (
-	"fmt"
+	"log"
 	"testing"
-	"webapp/bookstore/model"
+	"time"
 )
 
 func Test(t *testing.T) {
-	fmt.Println("开始测试")
-	// // t.Run("测试1", checkusernameTest)
-	// user := &model.User{
-	// 	ID:       1,
-	// 	Username: "1111",
-	// 	Password: "123",
-	// 	Email:    "www@Gmail.com",
-	// }
-	// UpdateUser(user)
-	book := &model.Books{
-		ID:             42,
-		Title:          "人间失格",
-		Author:         "太宰治",
-		Price:          6,
-		Sales:          100,
-		Stock:          100,
-		Classification: "0",
-		Publisher:      "0",
-		ImgPath:        "static/img/default.jpg",
-		Ebook:          true,
-	}
-	UpdateBook(book)
-	QueryBookByID("42")
-	fmt.Println("结束测试")
+	log.Println("开始测试")
+	time1 := time.Now()
+	log.Println(time1, time1.Format("2006-01-02 15:04:05"), time.Local)
+	timeStr := time.Now().Format("2006-01-02 15:04:05")
+
+	w, _ := time.ParseInLocation("2006-01-02 15:04:05", timeStr, time.Local)
+	log.Println(w)
+	// utils.DbIDUpdate("users")
+	// utils.DbIDUpdate("books")
+	// utils.DbIDUpdate("cartitems")
+	// utils.DbIDUpdate("orderitems")
+	log.Println("结束测试")
 }

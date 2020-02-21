@@ -1,7 +1,7 @@
 package dao
 
 import (
-	"fmt"
+	"log"
 	"webapp/bookstore/model"
 	"webapp/bookstore/utils"
 )
@@ -11,7 +11,7 @@ func AddCart(cart *model.Cart) error {
 	sql := "insert into carts (id,totalcount,totalamount,userid) values(?,?,?,?)"
 	_, err := utils.Db.Exec(sql, cart.ID, cart.TotalCount, cart.TotalAmount, cart.UserID)
 	if err != nil {
-		fmt.Println("AddCart:失败", err)
+		log.Println("AddCart:失败", err)
 		return err
 	}
 	return nil
@@ -33,7 +33,18 @@ func UpdateCart(cart *model.Cart) error {
 	sql := "update carts set totalcount=?,totalamount=? where userid=?"
 	_, err := utils.Db.Exec(sql, cart.TotalCount, cart.TotalAmount, cart.UserID)
 	if err != nil {
-		fmt.Println("UpdateCart:修改购物车失败", err)
+		log.Println("UpdateCart:修改购物车失败", err)
+		return err
+	}
+	return nil
+}
+
+//DeleteCart 修改购物车
+func DeleteCart(ID string) error {
+	sql := "Delette from carts where id=?"
+	_, err := utils.Db.Exec(sql, ID)
+	if err != nil {
+		log.Println("DeleteCart:删除购物车失败", err)
 		return err
 	}
 	return nil

@@ -14,7 +14,7 @@
 			<span class="wel_word">图书管理系统</span>
 			<div>
 				<a href="/bookManager">图书管理</a>
-				<a href="/myBookStore">返回商城</a>
+				<a href="/pages/manager/manager.html">返回</a>
 			</div>
 		</div>
 
@@ -37,7 +37,7 @@
 					<td>{{.Sales}}</td>
 					<td>{{.Stock}}</td>
 					<td><a href="/upDateBook?bookID={{.ID}}">修改</a></td>
-					<td><a href="/deleteBook?title={{.Title}}">删除</a></td>
+					<td><a href="/deleteBook?title={{.ID}}">删除</a></td>
 				</tr>
 				{{end}}
 				<tr>

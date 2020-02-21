@@ -2,7 +2,7 @@ package controller
 
 import (
 	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"text/template"
@@ -16,16 +16,28 @@ func QueryCart(w http.ResponseWriter, r *http.Request) {
 	_, session := dao.IsLogin(r)
 	userID := session.UserID
 	cart, _ := dao.QueryCart(userID)
-	fmt.Println(cart)
 	t := template.Must(template.ParseFiles("../view/pages/cart/cart.html"))
 	if cart.UserID > 0 {
-		fmt.Println("测试1")
 		session.Cart = cart
 		t.Execute(w, session)
 	} else {
-		fmt.Println("测试2")
 		t.Execute(w, session)
 	}
+}
+
+//DeleteCart 清空购物车
+func DeleteCart(w http.ResponseWriter, r *http.Request) {
+	ID := r.FormValue("cartID")
+	_, session := dao.IsLogin(r)
+	err1 := dao.DeleteOrderItemByCartID(ID)
+	if err1 != nil {
+		log.Println("DeleteCart：DeleteOrderItemByCartID失败", err1)
+	}
+	err2 := dao.UpdateCart(&model.Cart{ID: ID, CartItems: nil, TotalCount: 0, TotalAmount: 0, UserID: session.UserID})
+	if err2 != nil {
+		log.Println("DeleteCart：UpdateCart失败", err2)
+	}
+	QueryCart(w, r)
 }
 
 //UpdateCart 修改购物车
@@ -35,33 +47,26 @@ func UpdateCart(w http.ResponseWriter, r *http.Request) {
 	_, session := dao.IsLogin(r)
 	cart, err := dao.QueryCart(session.UserID)
 	if err != nil {
-		fmt.Println("UpdateCart：QueryCart失败", err)
+		log.Println("UpdateCart：QueryCart失败", err)
 	}
-	fmt.Println("1", cart)
 	cartItems := cart.CartItems
 	for _, v := range cartItems {
 		if v.ID == cartItemID {
-			fmt.Println("v2", v)
 			v.Count = bookCount
 			v.Amount = float64(v.Count) * v.Book.Price
-			fmt.Println("v2", v)
 			err1 := dao.UpdateCartItem(v)
 			if err1 != nil {
-				fmt.Println("UpdateCart:UpdateCartItem失败", err1)
+				log.Println("UpdateCart:UpdateCartItem失败", err1)
 			}
-
 		}
 	}
 	cart.TotalCount = cart.GetTotalCount()
 	cart.TotalAmount = cart.GetTotalAmount()
-	fmt.Println("2", cart)
 	err2 := dao.UpdateCart(cart)
 	if err2 != nil {
-		fmt.Println("UpdateCart:UpdateCart失败", err2)
+		log.Println("UpdateCart:UpdateCart失败", err2)
 	}
 	cart, _ = dao.QueryCart(session.UserID)
-	fmt.Println("3", cart)
-
 	totalCount := cart.TotalCount
 	//获取购物车中图书的总金额
 	totalAmount := cart.TotalAmount
@@ -91,17 +96,17 @@ func AddCart(w http.ResponseWriter, r *http.Request) {
 	if flag {
 		cart, err := dao.QueryCart(session.UserID)
 		if err != nil {
-			fmt.Println("AddBookCart:失败，没找到cart", err)
+			log.Println("AddBookCart:失败，没找到cart", err)
 		}
 		book, err1 := dao.QueryBookByID(bookID)
 		if err1 != nil {
-			fmt.Println("AddBookCart:没有找到图书信息", err1, book)
+			log.Println("AddBookCart:没有找到图书信息", err1, book)
 		}
 		//有购物车
 		if cart.UserID > 0 {
 			cartItem0, err := dao.QueryCartItem(bookID, cart.ID)
 			if cartItem0.ID > 0 {
-				fmt.Println("购物车中有该项", err, cartItem0)
+				log.Println("购物车中有该项", err, cartItem0)
 				cts := cart.CartItems
 				for _, v := range cts {
 					if v.Book.ID == cartItem0.Book.ID {
@@ -119,8 +124,10 @@ func AddCart(w http.ResponseWriter, r *http.Request) {
 				}
 				dao.AddCartItem(cartItem)
 				cart.CartItems = append(cart.CartItems, cartItem)
-				fmt.Println(cartItem)
 			}
+			cart.TotalCount = cart.GetTotalCount()
+			cart.TotalAmount = cart.GetTotalAmount()
+			dao.UpdateCart(cart)
 		} else {
 			cartID := utils.CreateUUID()
 			var cartItems []*model.CartItem
@@ -146,7 +153,6 @@ func AddCart(w http.ResponseWriter, r *http.Request) {
 		//没有登录
 		w.Write([]byte("请先登录！"))
 	}
-
 }
 
 //DeleteCartItem 删除购物车中的东西handler
@@ -155,14 +161,14 @@ func DeleteCartItem(w http.ResponseWriter, r *http.Request) {
 	_, session := dao.IsLogin(r)
 	cart, err := dao.QueryCart(session.UserID)
 	if err != nil {
-		fmt.Println("DeleteCartItem:QueryCart失败", err)
+		log.Println("DeleteCartItem:QueryCart失败", err)
 	}
 	for k, v := range cart.CartItems {
 		if v.ID == cartItemID {
 			cart.CartItems = append(cart.CartItems[:k], cart.CartItems[k+1:]...)
 			err1 := dao.DeleteCartItem(cartItemID)
 			if err1 != nil {
-				fmt.Println("DeleteCartItem:DeleteCartItem失败", err1)
+				log.Println("DeleteCartItem:DeleteCartItem失败", err1)
 			}
 		}
 	}
@@ -170,7 +176,7 @@ func DeleteCartItem(w http.ResponseWriter, r *http.Request) {
 	cart.TotalAmount = cart.GetTotalAmount()
 	err2 := dao.UpdateCart(cart)
 	if err2 != nil {
-		fmt.Println("DeleteCartItem:UpdateCart失败", err2)
+		log.Println("DeleteCartItem:UpdateCart失败", err2)
 	}
 	QueryCart(w, r)
 }

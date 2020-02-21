@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -22,18 +23,18 @@ func SearchBooks(w http.ResponseWriter, r *http.Request) {
 	}
 	page, err := dao.QueryBookByTitle(title, int(pageNum), 4)
 	if err != nil {
-		fmt.Println("QueryBookByTitle:数据库检索失败,书名:", title, err)
+		log.Println("QueryBookByTitle:数据库检索失败,书名:", title, err)
 		return
 	}
 
 	flag, session := dao.IsLogin(r)
 	if flag {
 		page.IsLogin = true
-		page.UserName = session.UserName
+		page.Username = session.Username
 	}
 	for _, k := range page.Books {
 		if k.ID == 0 {
-			fmt.Println("图书没有找到,书名:", title)
+			log.Println("图书没有找到,书名:", title)
 			t := template.Must(template.ParseFiles("../view/index.html"))
 			t.Execute(w, page)
 			return
@@ -55,7 +56,7 @@ func GetPageBooks(w http.ResponseWriter, r *http.Request) {
 	flag, session := dao.IsLogin(r)
 	if flag {
 		page.IsLogin = true
-		page.UserName = session.UserName
+		page.Username = session.Username
 	}
 	t := template.Must(template.ParseFiles("../view/index.html"))
 	if err != nil {
@@ -73,7 +74,7 @@ func GetBooks(w http.ResponseWriter, r *http.Request) {
 	books, err := dao.QueryAllBooks()
 	t := template.Must(template.ParseFiles("../view/pages/manager/book_manager.html"))
 	if err != nil {
-		fmt.Println("GetBooks:数据库操作失败", err)
+		log.Println("GetBooks:数据库操作失败", err)
 		t.Execute(w, nil)
 	}
 	t.Execute(w, books)
@@ -84,7 +85,7 @@ func UpdateBook(w http.ResponseWriter, r *http.Request) {
 	id := r.FormValue("bookID")
 	book, err := dao.QueryBookByID(id)
 	if err != nil {
-		fmt.Println("失败:", err)
+		log.Println("失败:", err)
 	} else {
 		t := template.Must(template.ParseFiles("../view/pages/manager/book_edit.html"))
 		if book.ID > 0 {
@@ -100,28 +101,29 @@ func UpdateOrAddBook(w http.ResponseWriter, r *http.Request) {
 	bookID, _ := strconv.ParseInt(r.PostFormValue("bookID"), 10, 0)
 	title := r.PostFormValue("title")
 	author := r.PostFormValue("author")
-	price, _ := strconv.ParseFloat(r.PostFormValue("price"), 32)
+	price, _ := strconv.ParseFloat(r.PostFormValue("price"), 64)
+	//保留两位小数，数据库设置decimal(19,2)
+	price, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", price), 64)
 	sales, _ := strconv.ParseInt(r.PostFormValue("sales"), 10, 0)
 	stock, _ := strconv.ParseInt(r.PostFormValue("stock"), 10, 0)
 	imgFile, imgHead, imgErr := r.FormFile("newImgPath")
 	if imgErr != nil {
-		fmt.Println("UpdateOrAddBook:图片上传失败", imgErr)
+		log.Println("UpdateOrAddBook:图片上传失败", imgErr)
 	}
 	imgPath := r.PostFormValue("oldImgPath")
 	if imgFile != nil {
 		dstf, err := os.OpenFile("E:\\Go_WorkSpaces\\src\\webapp\\bookstore\\view\\static\\img\\"+imgHead.Filename, os.O_CREATE, os.ModePerm)
 		defer dstf.Close()
 		if err != nil {
-			fmt.Println("UpdateOrAddBook:图片创建失败", err)
+			log.Println("UpdateOrAddBook:图片创建失败", err)
 		}
 		_, err2 := io.Copy(dstf, imgFile)
 		if err2 != nil {
-			fmt.Println("UpdateOrAddBook:图片复制失败", err2)
+			log.Println("UpdateOrAddBook:图片复制失败", err2)
 		}
 		imgPath = "/static/img/" + imgHead.Filename
 	}
-	fmt.Println(imgPath)
-	book := &model.Books{
+	book := &model.Book{
 		ID:             int(bookID),
 		Title:          title,
 		Author:         author,
@@ -136,13 +138,13 @@ func UpdateOrAddBook(w http.ResponseWriter, r *http.Request) {
 	if book.ID > 0 {
 		err := dao.UpdateBook(book)
 		if err != nil {
-			fmt.Println("UpdateOrAddBook:更新失败", err)
+			log.Println("UpdateOrAddBook:更新失败", err)
 		}
 
 	} else {
 		err := dao.AddBook(book)
 		if err != nil {
-			fmt.Println("UpdateOrAddBook:添加失败", err)
+			log.Println("UpdateOrAddBook:添加失败", err)
 		}
 	}
 	books, _ := dao.QueryAllBooks()
@@ -152,10 +154,10 @@ func UpdateOrAddBook(w http.ResponseWriter, r *http.Request) {
 
 //DeleteBook 删除图书handler
 func DeleteBook(w http.ResponseWriter, r *http.Request) {
-	title := r.FormValue("title")
-	err := dao.DeleteBook(title)
+	ID := r.FormValue("id")
+	err := dao.DeleteBook(ID)
 	if err != nil {
-		fmt.Println("DeleteBookhandler:", err)
+		log.Println("DeleteBookhandler:", err)
 	}
 	GetBooks(w, r)
 }

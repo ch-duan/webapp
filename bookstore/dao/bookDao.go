@@ -1,13 +1,15 @@
 package dao
 
 import (
-	"fmt"
+	"log"
+	"strconv"
+	"strings"
 	"webapp/bookstore/model"
 	"webapp/bookstore/utils"
 )
 
 //QueryPageBooks 分页获取图书
-func QueryPageBooks(pageNum int, pageSize int) (*model.Pages, error) {
+func QueryPageBooks(pageNum int, pageSize int) (*model.Page, error) {
 	sql := "select count(*) from books"
 	var totalRecurd int
 	var totalPageNum int
@@ -18,21 +20,21 @@ func QueryPageBooks(pageNum int, pageSize int) (*model.Pages, error) {
 	} else {
 		totalPageNum = totalRecurd/pageSize + 1
 	}
-	fields, _, _, _ := utils.AllValues(&model.Books{})
-	sql = "select " + fields + " from books limit ?,?"
+	fields := utils.StructField(&model.Book{})
+	sql = "select " + strings.Join(fields, ",") + " from books limit ?,?"
 	rows, err := utils.Db.Query(sql, (pageNum-1)*pageSize, pageSize)
 	if err != nil {
-		fmt.Println("QueryPageBooks:数据库操作失败", err)
+		log.Println("QueryPageBooks:数据库操作失败", err)
 		return nil, err
 	}
-	var books []*model.Books
+	var books []*model.Book
 	for rows.Next() {
-		book := &model.Books{}
-		_, _, values, _ := utils.AllValues(book)
+		book := &model.Book{}
+		values := utils.StructFieldSlice(book)
 		rows.Scan(values...)
 		books = append(books, book)
 	}
-	page := &model.Pages{
+	page := &model.Page{
 		Books:        books,
 		PageNum:      pageNum,
 		PageSize:     pageSize,
@@ -43,18 +45,17 @@ func QueryPageBooks(pageNum int, pageSize int) (*model.Pages, error) {
 }
 
 //QueryAllBooks 获取所有图书
-func QueryAllBooks() ([]*model.Books, error) {
-	var books []*model.Books
-	sqlFields, _, _, _ := utils.AllValues(&model.Books{})
-	sql := "select " + sqlFields + " from books"
+func QueryAllBooks() ([]*model.Book, error) {
+	var books []*model.Book
+	sql := utils.SQLSelectAll(&model.Book{}, "books")
 	rows, err := utils.Db.Query(sql)
 	if err != nil {
-		fmt.Println("GetBooks:数据库读取失败", err)
+		log.Println("GetBooks:数据库读取失败", err)
 		return nil, err
 	}
 	for rows.Next() {
-		book := &model.Books{}
-		_, _, values, _ := utils.AllValues(book)
+		book := &model.Book{}
+		values := utils.StructFieldSlice(book)
 		rows.Scan(values...)
 		books = append(books, book)
 	}
@@ -62,18 +63,18 @@ func QueryAllBooks() ([]*model.Books, error) {
 }
 
 //QueryBookByID 根据id查询书籍信息
-func QueryBookByID(id string) (*model.Books, error) {
-	book := &model.Books{}
-	sqlFields, _, values, _ := utils.AllValues(book)
-	sql := "select " + sqlFields + " from books where id=?"
-	rows := utils.Db.QueryRow(sql, id)
-	rows.Scan(values...)
-	return book, nil
+func QueryBookByID(id string) (*model.Book, error) {
+	book, err := utils.SQLExecQuery(&model.Book{}, "books", id, "id")
+	if err != nil {
+		log.Println("QueryBookByID:失败", err)
+		return nil, err
+	}
+	return book.(*model.Book), nil
 }
 
 //QueryBookByTitle 根据书名查询书籍信息
-func QueryBookByTitle(title string, pageNum int, pageSize int) (*model.Pages, error) {
-	var books []*model.Books
+func QueryBookByTitle(title string, pageNum int, pageSize int) (*model.Page, error) {
+	var books []*model.Book
 	var totalRecurd int
 	var totalPageNum int
 	sql := "select count(*) from books where title like '%" + title + "%' "
@@ -84,20 +85,20 @@ func QueryBookByTitle(title string, pageNum int, pageSize int) (*model.Pages, er
 	} else {
 		totalPageNum = totalRecurd/pageSize + 1
 	}
-	sqlFields, _, _, _ := utils.AllValues(&model.Books{})
-	sql = "select " + sqlFields + " from books where title like '%" + title + "%' limit ?,?"
+	sqlFields := utils.StructField(books)
+	sql = "select " + strings.Join(sqlFields, ",") + " from books where title like '%" + title + "%' limit ?,?"
 	rows, err := utils.Db.Query(sql, (pageNum-1)*pageSize, pageSize)
 	if err != nil {
-		fmt.Println("QueryBookByTitle:数据库操作失败", err)
+		log.Println("QueryBookByTitle:数据库操作失败", err)
 		return nil, err
 	}
 	for rows.Next() {
-		book := &model.Books{}
-		_, _, values, _ := utils.AllValues(book)
+		book := &model.Book{}
+		values := utils.StructFieldSlice(book)
 		rows.Scan(values...)
 		books = append(books, book)
 	}
-	page := &model.Pages{
+	page := &model.Page{
 		Books:        books,
 		PageNum:      pageNum,
 		PageSize:     pageSize,
@@ -108,50 +109,29 @@ func QueryBookByTitle(title string, pageNum int, pageSize int) (*model.Pages, er
 }
 
 //AddBook 添加图书信息
-func AddBook(book *model.Books) error {
-	fields, _, values, length := utils.AllValues(book)
-	sql := "insert into books (" + fields + ") values(?"
-	length = length - 1
-	for {
-		if length == 0 {
-			break
-		}
-		sql += ",?"
-		length = length - 1
-	}
-	sql += ");"
-	_, err := utils.Db.Exec(sql, values...)
+func AddBook(book *model.Book) error {
+	err := utils.SQLExecInsert(book, "books")
 	if err != nil {
-		fmt.Println("AddBook:数据库操作错误", err)
+		log.Println("AddBook:添加图书失败", err)
 		return err
 	}
 	return nil
 }
 
 //DeleteBook 删除图书
-func DeleteBook(title string) error {
-	sql := "delete from books where title=?"
-	fmt.Println(sql, title)
-	fmt.Println(title)
-	_, err := utils.Db.Exec(sql, title)
+func DeleteBook(ID string) error {
+	err := utils.SQLExecDelete("books", ID, "id")
 	if err != nil {
-		fmt.Println("DeleteBook:删除失败", err)
 		return err
 	}
-	fmt.Println("DeleteBook:删除成功", title)
 	return nil
 }
 
 //UpdateBook 修改图书
-func UpdateBook(book *model.Books) error {
-	_, fields2, values, _ := utils.AllValues(book)
-	//将id放到最后
-	s := values[0:1]
-	values = append(values[1:], s...)
-	sql := "update books set " + fields2 + "where id=?"
-	result, err := utils.Db.Exec(sql, values...)
+func UpdateBook(book *model.Book) error {
+	err := utils.SQLExecUpdate(book, "books", strconv.Itoa(book.ID), "id")
 	if err != nil {
-		fmt.Println("UpdateBook:失败", result, err)
+		log.Println("UpdateBook:失败", err)
 		return err
 	}
 	return nil

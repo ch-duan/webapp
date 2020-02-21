@@ -1,11 +1,9 @@
 package controller
 
 import (
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 	"webapp/bookstore/dao"
 	"webapp/bookstore/model"
 	"webapp/bookstore/utils"
@@ -18,30 +16,29 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	email := r.PostFormValue("email")
 	phonenum := r.PostFormValue("phoneNum")
 	if username == "" || password == "" {
-		fmt.Println("注册失败，用户名为空")
+		log.Println("注册失败，用户名为空")
 		t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
 		t.Execute(w, "用户名和密码不能为空!")
 		return
 	}
-	user, err := dao.QueryUserName(username)
+	user, err := dao.QueryUserByUsername(username)
 	if err != nil {
-		fmt.Println("QueryUserName:数据库检索失败,用户名:", username, "，密码:", password, ",邮箱:", email, err)
+		log.Println("QueryUserByUsername:数据库检索失败", err)
 	} else {
 		if user.ID > 0 {
-			fmt.Println("QueryUserName注册失败，用户已经存在,用户名:", username, "，密码:", password, ",邮箱:", email)
+			log.Println("QueryUserByUsername注册失败，用户已经存在")
 			t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
 			t.Execute(w, "用户名已存在!")
 		} else {
-			err = dao.AddUser(username, password, email, phonenum)
+			err = dao.AddUser(&model.User{Username: username, Password: password, Email: email, PhoneNum: phonenum})
 			if err != nil {
-				fmt.Println("AddUser:注册失败,用户名:", username, "，密码:", password, ",邮箱:", email)
+				log.Println("AddUser:注册失败", err)
 				t := template.Must(template.ParseFiles("../view/pages/user/regist.html"))
 				t.Execute(w, "注册失败")
 			} else {
-				fmt.Println("注册成功,用户名:", username, "，密码:", password, ",邮箱:", email)
+				log.Println("注册成功")
 				t := template.Must(template.ParseFiles("../view/pages/user/regist_success.html"))
-				user.UserName = username
-				fmt.Println(user)
+				user.Username = username
 				t.Execute(w, user)
 			}
 		}
@@ -66,24 +63,21 @@ func Logout(w http.ResponseWriter, r *http.Request) {
 func Login(w http.ResponseWriter, r *http.Request) {
 
 	flag, _ := dao.IsLogin(r)
-	fmt.Println("测试", flag)
 	if flag {
 
 	} else {
 		username := r.PostFormValue("username")
 		password := r.PostFormValue("password")
-		str, _ := os.Getwd()
-		fmt.Println("login：", str)
 		user, err := dao.CheckUser(username, password)
 		if err != nil {
-			fmt.Println("CheckUser:数据库检索失败,用户名:", username, ",密码:", password, err)
+			log.Println("CheckUser:数据库检索失败", err)
 		} else {
 			if user.ID > 0 {
 				//用户名和密码正确
 				uuid := utils.CreateUUID()
 				session := &model.Session{
 					SessionID: uuid,
-					UserName:  user.UserName,
+					Username:  user.Username,
 					UserID:    user.ID,
 				}
 				dao.AddSession(session)
@@ -94,13 +88,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
 					MaxAge:   3600,
 				}
 				http.SetCookie(w, &cookie)
-
 				t := template.Must(template.ParseFiles("../view/pages/user/login_success.html"))
 				t.Execute(w, user)
-				fmt.Println("登陆成功")
-				log.Println(username, password, user)
+				log.Println("登陆成功")
 			} else {
-				fmt.Println("用户名或密码错误")
+				log.Println("用户名或密码错误")
 				t := template.Must(template.ParseFiles("../view/pages/user/login.html"))
 				t.Execute(w, "用户名或密码错误")
 			}
@@ -108,12 +100,12 @@ func Login(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-//QueryUserName 用户名可用验证
-func QueryUserName(w http.ResponseWriter, r *http.Request) {
+//QueryUserByUsername 用户名可用验证
+func QueryUserByUsername(w http.ResponseWriter, r *http.Request) {
 	username := r.PostFormValue("username")
-	user, err := dao.QueryUserName(username)
+	user, err := dao.QueryUserByUsername(username)
 	if err != nil {
-		fmt.Println("QueryUserName:数据库检索失败,用户名:", username, err)
+		log.Println("QueryUserByUsername:数据库检索失败,用户名:", username, err)
 	} else {
 		if user.ID > 0 {
 			w.Write([]byte("用户名已经存在!"))

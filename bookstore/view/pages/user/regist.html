@@ -58,7 +58,7 @@
 				});
 				$("#username").change(function () {
 					var username = $(this).val();
-					var url = "/queryUserName";
+					var url = "/queryUsername";
 					var param = { "username": username };
 					$.post(url, param, function (res) {
 						$("#msg").show();

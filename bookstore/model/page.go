@@ -1,28 +1,28 @@
 package model
 
-//Pages 页面结构体
-type Pages struct {
-	Books        []*Books
+//Page 页面结构体
+type Page struct {
+	Books        []*Book
 	PageNum      int //页号
 	PageSize     int //每页显示的条数
 	TotalPageNum int //总页数
 	TotalRecurd  int //总记录
 	IsLogin      bool
-	UserName     string
+	Username     string
 }
 
 //IsHasPrev 判断是否有上一页
-func (p *Pages) IsHasPrev() bool {
+func (p *Page) IsHasPrev() bool {
 	return p.PageNum > 1
 }
 
 //IsHasNext 判断是否有下一页
-func (p *Pages) IsHasNext() bool {
+func (p *Page) IsHasNext() bool {
 	return p.PageNum < p.TotalPageNum
 }
 
 //GetPrevPageNum 获取上一页
-func (p *Pages) GetPrevPageNum() int {
+func (p *Page) GetPrevPageNum() int {
 	if p.IsHasPrev() {
 		return p.PageNum - 1
 	}
@@ -30,7 +30,7 @@ func (p *Pages) GetPrevPageNum() int {
 }
 
 //GetNextPageNum 获取下一页
-func (p *Pages) GetNextPageNum() int {
+func (p *Page) GetNextPageNum() int {
 	if p.IsHasNext() {
 		return p.PageNum + 1
 	}

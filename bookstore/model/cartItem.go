@@ -3,7 +3,7 @@ package model
 //CartItem 购物项结构体
 type CartItem struct {
 	ID     int     //购物项的id
-	Book   *Books  //购物项中的图书信息
+	Book   *Book   //购物项中的图书信息
 	Count  int     //购物项中图书的数量
 	Amount float64 //购物项中图书的金额小计，通过计算得到
 	CartID string  //当前购物项属于哪一个购物车

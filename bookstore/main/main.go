@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"text/template"
@@ -14,10 +14,7 @@ import (
 func myBookStore(w http.ResponseWriter, r *http.Request) {
 	books, err := dao.QueryAllBooks()
 	if err != nil {
-		fmt.Println("myBookStore:失败，数据库操作失败", err)
-	}
-	for _, k := range books {
-		fmt.Println(k)
+		log.Println("myBookStore:失败，数据库操作失败", err)
 	}
 	t := template.Must(template.ParseFiles("../view/index.html"))
 	t.Execute(w, books)
@@ -25,13 +22,14 @@ func myBookStore(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	str, _ := os.Getwd()
-	fmt.Println("mainPath:", str)
+	log.Println("mainPath:", str)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../view/static"))))
 	http.Handle("/pages/", http.StripPrefix("/pages/", http.FileServer(http.Dir("../view/pages"))))
+	http.HandleFunc("/rootlogin", controller.RootLogin)
 	http.HandleFunc("/login", controller.Login)
 	http.HandleFunc("/logout", controller.Logout)
 	http.HandleFunc("/register", controller.Register)
-	http.HandleFunc("/queryUserName", controller.QueryUserName)
+	http.HandleFunc("/queryUsername", controller.QueryUserByUsername)
 	http.HandleFunc("/search", controller.SearchBooks)
 	http.HandleFunc("/bookManager", controller.GetBooks)
 	http.HandleFunc("/upDateBook", controller.UpdateBook)
@@ -40,8 +38,15 @@ func main() {
 	http.HandleFunc("/myBookStore", controller.GetPageBooks)
 	http.HandleFunc("/cart", controller.QueryCart)
 	http.HandleFunc("/addCart", controller.AddCart)
+	http.HandleFunc("/deleteCart", controller.DeleteCart)
 	http.HandleFunc("/updateCartItem", controller.UpdateCart)
 	http.HandleFunc("/deleteCartItem", controller.DeleteCartItem)
-	fmt.Println("程序开始监听8080：")
+	http.HandleFunc("/checkout", controller.Checkout)
+	http.HandleFunc("/queryMyOrderHandler", controller.QueryMyOrderHandler)
+	http.HandleFunc("/orderManager", controller.GetOrders)
+	http.HandleFunc("/getOrderInfo", controller.GetOrderInfo)
+	http.HandleFunc("/sendOrder", controller.SendOrder)
+	http.HandleFunc("/takeOrder", controller.TakeOrder)
+	log.Println("程序开始监听8080：")
 	http.ListenAndServe(":8080", nil)
 }

@@ -2,7 +2,7 @@ package utils
 
 import (
 	"database/sql"
-	"fmt"
+	"log"
 
 	//mysql驱动
 	_ "github.com/go-sql-driver/mysql"
@@ -27,20 +27,20 @@ func DbIDUpdate(table string) {
 	sql := "ALTER TABLE " + table + " DROP id"
 	_, err := Db.Exec(sql)
 	if err != nil {
-		fmt.Println("删除自增主键失败", err)
+		log.Println("删除自增主键失败", err)
 	} else {
 	}
 	sql = "ALTER TABLE " + table + " ADD id int not null first"
 	_, err1 := Db.Exec(sql)
 	if err1 != nil {
-		fmt.Println("添加字段失败", err1)
+		log.Println("添加字段失败", err1)
 	} else {
 	}
 	sql = "ALTER TABLE " + table + " MODIFY COLUMN id int not null AUTO_INCREMENT, ADD PRIMARY KEY(id)"
 	_, err2 := Db.Exec(sql)
 	if err2 != nil {
-		fmt.Println("更新自增主键失败", err2)
+		log.Println("更新自增主键失败", err2)
 	} else {
 	}
-	fmt.Println("更新自增ID成功")
+	log.Println("更新自增ID成功")
 }

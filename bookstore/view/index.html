@@ -30,17 +30,17 @@
 			<span class="wel_word">网上书城</span>
 			{{ if .IsLogin }}
 			<div>
-				<span>欢迎<span class="um_span">{{.UserName }}</span>光临书城</span>
+				<span>欢迎<span class="um_span">{{.Username }}</span>光临书城</span>
 				<a href="/logout">注销</a>&nbsp;&nbsp;
 				<a href="/cart">购物车</a>
-				<a href="/bookManager">后台管理</a>
+				<a href="/queryMyOrderHandler">我的订单</a>
+				<a href="/myBookStore">返回</a>
 			</div>
 			{{ else}}
 			<div>
 				<a href="pages/user/login.html">登录</a> |
 				<a href="pages/user/regist.html">注册</a> &nbsp;&nbsp;
-				<a href="/cart">购物车</a>
-				<a href="/bookManager">后台管理</a>
+				<a href="/pages/user/rootLogin.html">后台管理</a>
 			</div>
 			{{ end }}
 		</div>
