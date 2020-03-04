@@ -111,8 +111,9 @@ func UpdateOrAddBook(w http.ResponseWriter, r *http.Request) {
 		log.Println("UpdateOrAddBook:图片上传失败", imgErr)
 	}
 	imgPath := r.PostFormValue("oldImgPath")
+	dir, _ := os.Getwd()
 	if imgFile != nil {
-		dstf, err := os.OpenFile("E:\\Go_WorkSpaces\\src\\webapp\\bookstore\\view\\static\\img\\"+imgHead.Filename, os.O_CREATE, os.ModePerm)
+		dstf, err := os.OpenFile(dir+"/view/static/img/"+imgHead.Filename, os.O_CREATE, os.ModePerm)
 		defer dstf.Close()
 		if err != nil {
 			log.Println("UpdateOrAddBook:图片创建失败", err)
