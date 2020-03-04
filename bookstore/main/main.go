@@ -9,7 +9,15 @@ import (
 	"webapp/bookstore/dao"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/jinzhu/gorm"
 )
+
+//Product test
+type Product struct {
+	gorm.Model
+	Code  string
+	Price uint
+}
 
 func myBookStore(w http.ResponseWriter, r *http.Request) {
 	books, err := dao.QueryAllBooks()
