@@ -34,7 +34,7 @@
 				<a href="/logout">注销</a>&nbsp;&nbsp;
 				<a href="/cart">购物车</a>
 				<a href="/queryMyOrderHandler">我的订单</a>
-				<a href="/myBookStore">返回</a>
+				<a href="/">返回</a>
 			</div>
 			{{ else}}
 			<div>
@@ -102,21 +102,21 @@
 
 			<div id="page_nav">
 				{{ if .IsHasPrev }}
-				<a href="/myBookStore">首页</a>
-				<a href="/myBookStore?pageNum={{.GetPrevPageNum}}">上一页</a>
+				<a href="/">首页</a>
+				<a href="/?pageNum={{.GetPrevPageNum}}">上一页</a>
 				{{ end }}
 
 				当前是第{{.PageNum }}页共{{.TotalPageNum }}页，{{.TotalRecurd }}条记录
 				{{ if .IsHasNext }}
-				<a href="/myBookStore?pageNum={{.GetNextPageNum}}">下一页</a>
-				<a href="/myBookStore?pageNum={{.TotalPageNum}}">末页</a>
+				<a href="/?pageNum={{.GetNextPageNum}}">下一页</a>
+				<a href="/?pageNum={{.TotalPageNum}}">末页</a>
 				{{ end }}
 				到第<input value="{{.PageNum}}" name="pn" id="pn_input" />页
 				<input type="button" value="确定" id="sub">
 				<script>
 					$("#sub").click(function () {
 						var pageNum = $("#pn_input").val();
-						location = "/myBookStore?pageNum=" + pageNum
+						location = "/?pageNum=" + pageNum
 					});
 				</script>
 			</div>

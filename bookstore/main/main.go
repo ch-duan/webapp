@@ -43,7 +43,7 @@ func main() {
 	http.HandleFunc("/upDateBook", controller.UpdateBook)
 	http.HandleFunc("/updateOrAddBook", controller.UpdateOrAddBook)
 	http.HandleFunc("/deleteBook", controller.DeleteBook)
-	http.HandleFunc("/myBookStore", controller.GetPageBooks)
+	http.HandleFunc("/", controller.GetPageBooks)
 	http.HandleFunc("/cart", controller.QueryCart)
 	http.HandleFunc("/addCart", controller.AddCart)
 	http.HandleFunc("/deleteCart", controller.DeleteCart)
